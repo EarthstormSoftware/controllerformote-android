@@ -1,0 +1,49 @@
+<resources>
+    <!-- App Information -->
+    <string name="app_name">Controller for Mote</string>
+    <string name="app_version">1.0.0</string>
+    <string name="copyright">©2016 All Rights Reserved.</string>
+
+    <!-- About -->
+    <string name="action_about">About</string>
+    <string name="lblAboutTitle">About Controller for Mote</string>
+    <string name="txtAboutSummary">Information about Controller for Mote</string>
+    <string name="lblVersionCode">versionCode </string>
+    <string name="txtGitHub">On GitHub at <a href="https://github.com/EarthstormSoftware/controllerformote-android">EarthstormSoftware/controllerformote-android</a></string>
+    <string name="txtDeveloper">Originally developed by <a href="http://www.earthstormsoftware.com">Earthsorm Software</a></string>
+
+
+    <!-- Main Activity -->
+    <string name="lbl_mote_onoff">Switch Mote On or Off</string>
+    <string name="lbl_mote_colour">Change Mote Colour</string>
+    <string name="lbl_mote_refresh">Refresh</string>
+
+    <!-- LegalInfo Activity and ShowLegalNoticeActivity -->
+    <string name="action_legal">Legal Information</string>
+    <string name="title_activity_legal_info">Legal Information</string>
+    <string-array name="Licenses">
+        <item>Controller for Mote</item>
+        <item>GSON</item>
+        <item>Retrofit</item>
+        <item>ColorPicker</item>
+    </string-array>
+
+    <string name="lblLegalNotices">Legal Information</string>
+    <string name="lblMoteControlLicense">Controller for Mote</string>
+    <string name="lblGsonLibrary">Gson</string>
+    <string name="lblRetrofitLibrary">Retrofit</string>
+    <string name="lblColorPickerLibrary">ColorPicker</string>
+
+    <!-- API -->
+    <string name="txt_mote_api_error">Call to Mote API failed</string>
+
+
+    <!-- Strings related to Settings -->
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- General settings -->
+    <string name="pref_header_general">General</string>
+    <string name="pref_title_mote_url">Mote API URL</string>
+    <string name="title_activity_about">About</string>
+</resources>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.earthstormsoftware.motecontrol">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity
+            android:name=".MainActivity"
+            android:label="@string/app_name"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/title_activity_settings"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.earthstormsoftware.motecontrol.MainActivity" />
+        </activity>
+        <activity
+            android:name=".LegalInfoActivity"
+            android:label="@string/title_activity_legal_info"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.earthstormsoftware.motecontrol.MainActivity" />
+        </activity>
+        <activity
+            android:name=".ShowLegalNoticeActivity"
+            android:label="@string/title_activity_legal_info"
+            android:parentActivityName=".LegalInfoActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="com.earthstormsoftware.motecontrol.MC_LEGALNOTICE_ACTION" />
+                <action android:name="com.earthstormsoftware.motecontrol.GSON_LEGALNOTICE_ACTION" />
+                <action android:name="com.earthstormsoftware.motecontrol.RETROFIT_LEGALNOTICE_ACTION" />
+                <action android:name="com.earthstormsoftware.motecontrol.COLORPICKER_LEGALNOTICE_ACTION" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.earthstormsoftware.motecontrol.LegalInfoActivity" />
+        </activity>
+        <activity
+            android:name=".AboutActivity"
+            android:label="@string/title_activity_about"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.earthstormsoftware.motecontrol.MainActivity" />
+        </activity>
+    </application>
+
+</manifest>

@@ -1,0 +1,119 @@
+apply plugin: 'com.android.application'
+
+def getDate() {
+    def date = new Date()
+    def formattedDate = date.format('yyyyMMddHHmm')
+    return formattedDate
+}
+
+def versionPropsFile = file('version.properties')
+def buildPropsFile = file('build.properties')
+def vcode = 1
+def vname = "1.0.0"
+def aid = "com.example.motecontrol"
+
+if (versionPropsFile.canRead()) {
+    def Properties versionProps = new Properties()
+    versionProps.load(new FileInputStream(versionPropsFile))
+    vname = versionProps['VERSION_NAME']
+    vcode = versionProps['VERSION_CODE'].toInteger() + 1
+    versionProps['VERSION_CODE'] = vcode.toString()
+    versionProps.store(versionPropsFile.newWriter(), null)
+}
+
+if (buildPropsFile.canRead()) {
+    def Properties buildProps = new Properties()
+    buildProps.load(new FileInputStream(buildPropsFile))
+    aid = buildProps['applicationID']
+}
+
+println ""
+println "MoteControl Build Properties"
+println "----------------------------"
+println "versionName set to: " + vname
+println "versionCode set to: " + vcode
+println "applicationID set to: " + aid
+println ""
+
+if(project.hasProperty("General.signingLocation")
+        && new File(project.property("General.signingLocation") + ".gradle").exists()) {
+    apply from: project.property("General.signingLocation") + ".gradle";
+}
+
+android {
+    compileSdkVersion 24
+    buildToolsVersion "24.0.3"
+
+    defaultConfig {
+        applicationId aid
+        minSdkVersion 16
+        targetSdkVersion 24
+        versionCode vcode
+        versionName vname
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        vectorDrawables.useSupportLibrary = true
+    }
+
+    signingConfigs {
+        release
+    }
+
+
+    buildTypes {
+        debug {
+            applicationIdSuffix ".dbg"
+            versionNameSuffix "-" + getDate() + "D"
+        }
+
+        release {
+            debuggable false
+            jniDebuggable false
+            signingConfig signingConfigs.release
+            versionNameSuffix "-" + getDate() + "R"
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    compile 'com.android.support:appcompat-v7:24.2.1'
+    compile 'com.android.support:design:24.2.1'
+    compile 'com.google.code.gson:gson:2.7'
+    compile 'com.squareup.retrofit2:retrofit:2.1.0'
+    compile 'com.squareup.retrofit2:converter-gson:2.1.0'
+    compile 'com.squareup.okhttp3:logging-interceptor:3.3.1'
+    compile 'com.android.support:support-v4:24.2.1'
+    compile 'com.android.support:support-vector-drawable:24.2.1'
+    testCompile 'junit:junit:4.12'
+}
+
+if (buildPropsFile.canRead()) {
+    def props = new Properties()
+    props.load(new FileInputStream(rootProject.file(buildPropsFile)))
+
+    println ""
+    println "MoteControl Signing Properties"
+    println "----------------------------"
+
+    def signingConfigFile = file(props['signingConfiguration'])
+    println "Signing Configuration: " + signingConfigFile
+
+    if (signingConfigFile.canRead()) {
+        def signingProps = new Properties()
+        signingProps.load(new FileInputStream(signingConfigFile))
+
+        def keystoreFile = file(signingProps['keyStore'])
+        println "keystore: " + keystoreFile
+        android.signingConfigs.release.storeFile keystoreFile
+        android.signingConfigs.release.storePassword signingProps['keyStorePassword']
+        android.signingConfigs.release.keyAlias signingProps['keyAlias']
+        android.signingConfigs.release.keyPassword signingProps['keyAliasPassword']
+    }
+    println ""
+}
