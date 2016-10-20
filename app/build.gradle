@@ -58,7 +58,6 @@ android {
         release
     }
 
-
     buildTypes {
         debug {
             applicationIdSuffix ".dbg"
@@ -73,7 +72,6 @@ android {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
-
     }
 }
 

@@ -16,14 +16,19 @@
 
 package com.earthstormsoftware.motecontrol;
 
+import com.google.gson.annotations.SerializedName;
+
 /*
  When Retrofit receives the response to the API call, it can parse the response, and map it to an
  object. In our case, the response is in JSON so we use GSON to convert that to a usable object,
  defined here.
  */
 public class MoteStatus {
-    int status;
-    String colour;
+    @SerializedName("status")
+    public int status;
+
+    @SerializedName("colour")
+    public String colour;
 
     public int getStatus() {
         return status;
