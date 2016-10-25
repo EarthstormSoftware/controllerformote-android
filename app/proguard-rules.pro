@@ -17,8 +17,8 @@
 #}
 
 # Application classes that will be serialized/deserialized over Gson
--keep class com.earthstormsoftware.motecontrol.MoteStatus { *; }
--keep interface com.earthstormsoftware.motecontrol.MoteAPI { *; }
+-keep class com.earthstormsoftware.motecontrol.com.earthstormsoftware.motecontrol.moteutil.MoteAPIResponse { *; }
+-keep interface com.earthstormsoftware.motecontrol.com.earthstormsoftware.motecontrol.moteutil.MoteAPI { *; }
 
 # Rules for using the Support classes
 -keep public class android.support.v7.widget.** { *; }

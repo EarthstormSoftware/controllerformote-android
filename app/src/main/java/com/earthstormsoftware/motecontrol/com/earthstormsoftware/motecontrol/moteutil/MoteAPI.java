@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.earthstormsoftware.motecontrol;
+package com.earthstormsoftware.motecontrol.com.earthstormsoftware.motecontrol.moteutil;
 
 import retrofit2.Call;
 import retrofit2.http.GET;
@@ -27,14 +27,14 @@ import retrofit2.http.Path;
 
 public interface MoteAPI {
     @GET("/mote/api/v1.0/status")
-    Call<MoteStatus> getMoteStatus();
+    Call<MoteAPIResponse> getMoteStatus();
 
     @GET("/mote/api/v1.0/on")
-    Call<MoteStatus> setMoteOn();
+    Call<MoteAPIResponse> setMoteOn();
 
     @GET("/mote/api/v1.0/off")
-    Call<MoteStatus> setMoteOff();
+    Call<MoteAPIResponse> setMoteOff();
 
     @GET("/mote/api/v1.0/set/{colour}")
-    Call<MoteStatus> setMoteColour(@Path("colour") String colour);
+    Call<MoteAPIResponse> setMoteColour(@Path("colour") String colour);
 }

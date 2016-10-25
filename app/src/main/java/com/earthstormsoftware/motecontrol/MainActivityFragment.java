@@ -16,12 +16,17 @@
 
 package com.earthstormsoftware.motecontrol;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,27 +35,25 @@ import android.widget.CompoundButton;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
-import okhttp3.OkHttpClient;
-import okhttp3.logging.HttpLoggingInterceptor;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
+import com.earthstormsoftware.motecontrol.com.earthstormsoftware.motecontrol.moteutil.Mote;
+import com.earthstormsoftware.motecontrol.com.earthstormsoftware.motecontrol.moteutil.MoteAPIResponseType;
+import com.earthstormsoftware.motecontrol.com.earthstormsoftware.motecontrol.moteutil.MoteMode;
 
 /*
-    Fragment used to display the main UI. Using fragments is generally considered good practice,
-    even though the initial UI is quite simple.
+ *  Fragment used to display the main UI. Using fragments is generally considered good practice,
+ *  even though the initial UI is quite simple.
  */
 
 public class MainActivityFragment extends Fragment {
 
     private String moteURI;
 
+    private Mote mote;
     private ToggleButton tglMoteSwitch;
     private Button btnColourPicker;
     private int initialPickerColor;
 
+    private BroadcastReceiver moteUpdateReceiver;
     private ColorPickerDialog colorPickerDialog;
 
     public MainActivityFragment() {
@@ -65,7 +68,15 @@ public class MainActivityFragment extends Fragment {
 
         // Retrieve the URL of the Mote API from device storage
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        moteURI = prefs.getString("mote_uri", "http://127.0.0.1");
+        moteURI = prefs.getString("mote_uri", null);
+
+        // Create the local Mote object and get the current status of the Mote from the host device
+        if (moteURI != null){
+            mote = new Mote(moteURI,"1","Mote1",false, MoteMode.COLOUR);
+            mote.updateMoteStatus();
+        } else {
+            Toast.makeText(getActivity(), R.string.configure_api_url, Toast.LENGTH_SHORT).show();
+        }
 
         // Setup the colour picker dialog that will be called when the user clicks the button
         initialPickerColor = Color.WHITE;
@@ -73,8 +84,10 @@ public class MainActivityFragment extends Fragment {
 
             @Override
             public void onColorSelected(int color) {
-                GradientDrawable bgShape = (GradientDrawable)btnColourPicker.getBackground();
-                bgShape.setColor(color);
+                Log.i(MoteControl.TAG,"Color selected: " + color);
+                if (mote != null) {
+                    mote.setColour(color);
+                }
                 setMoteColour(color);
             }
         });
@@ -84,152 +97,126 @@ public class MainActivityFragment extends Fragment {
         btnColourPicker.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                colorPickerDialog.show();
+                if (mote != null) {
+                    colorPickerDialog.show();
+                } else {
+                    Toast.makeText(getActivity(), R.string.configure_api_url, Toast.LENGTH_SHORT).show();
+                }
+
             }
         });
-
 
         // Setup the toggle button which will turn the Mote on and off
         tglMoteSwitch = (ToggleButton) view.findViewById(R.id.tglMoteSwitch);
         tglMoteSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    toggleMoteStatus(true);
+                if (mote != null) {
+                    if (isChecked) {
+                        setMoteState(true);
+                    } else {
+                        setMoteState(false);
+                    }
                 } else {
-                    toggleMoteStatus(false);
+                    if (isChecked) {
+                        tglMoteSwitch.setChecked(false);
+                        Toast.makeText(getActivity(), R.string.configure_api_url, Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
         });
-
-        // Try and get the current status of the Mote
-        updateMoteStatus();
-
         return view;
     }
 
-    // Call the Mote API to get the current state and colour of the Mote
-    public void updateMoteStatus(){
+    @Override
+    public void onResume() {
+        super.onResume();
 
-        // Uncomment to enable Retrofit logging
-        //HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-        //logging.setLevel(HttpLoggingInterceptor.Level.BODY);
-        OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
-        //httpClient.addInterceptor(logging);
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(moteURI)
-                .addConverterFactory(GsonConverterFactory.create())
-                .client(httpClient.build())
-                .build();
-
-        MoteAPI moteAPI = retrofit.create(MoteAPI.class);
-
-        // This is where the API actually gets called.
-        // Note: Using Enqueue means this is an asynchronous call, and not handled on the UI thread.
-        final Call<MoteStatus> call = moteAPI.getMoteStatus();
-        call.enqueue(new Callback<MoteStatus>() {
-            @Override
-            public void onResponse(Call<MoteStatus> call, Response<MoteStatus> response) {
-
-                // Change the toggle switch setting depending on the Mote status
-                if (response.body().getStatus() == 1){
-                    tglMoteSwitch.setChecked(true);
-                } else {
-                    tglMoteSwitch.setChecked(false);
+        /*
+         * When the Fragment is visible and active, use a BroadcastReceiver to receive notifications
+         * when an API response is received so the displayed information can be updated.
+         */
+        if (moteUpdateReceiver == null){
+            moteUpdateReceiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    MoteAPIResponseType mrt = (MoteAPIResponseType) intent.getSerializableExtra("result");
+                    if (mrt == MoteAPIResponseType.OK) {
+                        updateDisplay();
+                    } else {
+                        Toast.makeText(getActivity(), mrt.toString(), Toast.LENGTH_SHORT).show();
+                    }
                 }
+            };
+            Log.i(MoteControl.TAG,"BroadcastReceiver created");
+        }
+        IntentFilter intent = new IntentFilter(MoteControl.MOTE_API_RESPONSE);
+        getActivity().registerReceiver(moteUpdateReceiver, intent);
+        Log.i(MoteControl.TAG,"BroadcastReceiver registered");
 
-                // Change the colour button depending on the Mote colour/
-                int curColour = Color.parseColor("#" + response.body().getColour());
-                GradientDrawable bgShape = (GradientDrawable)btnColourPicker.getBackground();
-                bgShape.setColor(curColour);
-            }
-
-            @Override
-            public void onFailure(Call<MoteStatus> call, Throwable t) {
-                // If the API call fails for any reason a short toast will be popped up.
-                Toast.makeText(getActivity(), R.string.txt_mote_api_error, Toast.LENGTH_SHORT).show();
-            }
-        });
+        // Update the display whenever the user returns to this fragment
+        updateDisplay();
     }
 
-    // Call the Mote API to set the current state (on or off) of the Mote
-    public void toggleMoteStatus(boolean newState){
+    @Override
+    public void onPause() {
+        super.onPause();
 
-        //HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-        //logging.setLevel(HttpLoggingInterceptor.Level.BODY);
-        OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
-        //httpClient.addInterceptor(logging);
+        // If the user navigates away from the fragment, unregister the BroadcastReveiver as
+        // notifications are not required.
+        getActivity().unregisterReceiver(moteUpdateReceiver);
+        Log.i(MoteControl.TAG,"BroadcastReceiver unregistered");
+    }
 
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(moteURI)
-                .addConverterFactory(GsonConverterFactory.create())
-                .client(httpClient.build())
-                .build();
+    // Update the UI elements based on the current known state
+    private void updateDisplay(){
 
-        MoteAPI moteAPI = retrofit.create(MoteAPI.class);
+        Log.i(MoteControl.TAG,"Updating UI based on current status");
 
-        // Call different API methods for turning on and off
-        Call<MoteStatus> call;
-        if (newState == true) {
-            call = moteAPI.setMoteOn();
+        if (mote != null) {
+            // Change the toggle switch setting depending on the Mote status
+            if (mote.isOn()){
+                tglMoteSwitch.setChecked(true);
+            } else {
+                tglMoteSwitch.setChecked(false);
+            }
+
+            // Change the colour button depending on the Mote colour/
+            GradientDrawable bgShape = (GradientDrawable)btnColourPicker.getBackground();
+            bgShape.setColor(mote.getColour());
+        }
+    }
+
+    // Call the Mote API to get the current status of the Mote from the host device
+    public void updateMoteStatus(){
+        if (mote != null){
+            Log.i(MoteControl.TAG,"Requesting Mote status update");
+            mote.updateMoteStatus();
+            updateDisplay();
         } else {
-            call = moteAPI.setMoteOff();
+            Toast.makeText(getActivity(), R.string.configure_api_url, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // Call the Mote API to set the current state (on or off) on the Mote device
+    public void setMoteState(boolean newState){
+        if (mote != null){
+            Log.i(MoteControl.TAG,"Setting new Mote state");
+            mote.setMoteState(newState);
+            updateDisplay();
+        } else {
+            Toast.makeText(getActivity(), R.string.configure_api_url, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // Call the Mote API to set the desired colour of the Mote on the host device
+    public void setMoteColour(int newColour){
+        if (mote != null){
+            Log.i(MoteControl.TAG,"Setting new Mote colour");
+            mote.setMoteColour();
+            updateDisplay();
+        } else {
+            Toast.makeText(getActivity(), R.string.configure_api_url, Toast.LENGTH_SHORT).show();
         }
 
-        call.enqueue(new Callback<MoteStatus>() {
-            @Override
-            public void onResponse(Call<MoteStatus> call, Response<MoteStatus> response) {
-
-                // If the call worked, the toggle switch will already have been set to the desired
-                // state, so we just need to update the current colour, which is provided in the
-                // response
-                int curColour = Color.parseColor("#" + response.body().getColour());
-                GradientDrawable bgShape = (GradientDrawable)btnColourPicker.getBackground();
-                bgShape.setColor(curColour);
-            }
-
-            @Override
-            public void onFailure(Call<MoteStatus> call, Throwable t) {
-                Toast.makeText(getActivity(), R.string.txt_mote_api_error, Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    // Call the Mote API to set the desired colour of the Mote
-    public void setMoteColour(int newColour){
-
-        //HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-        //logging.setLevel(HttpLoggingInterceptor.Level.BODY);
-        OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
-        //httpClient.addInterceptor(logging);
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(moteURI)
-                .addConverterFactory(GsonConverterFactory.create())
-                .client(httpClient.build())
-                .build();
-
-        MoteAPI moteAPI = retrofit.create(MoteAPI.class);
-
-        // Android stores colour as ints, but the API expects RGB values in the form RRGGBB, so we
-        // need to convert before calling the API
-        String strColour = String.format("%06X", (0xFFFFFF & newColour));
-        final Call<MoteStatus> call = moteAPI.setMoteColour(strColour);
-
-        call.enqueue(new Callback<MoteStatus>() {
-            @Override
-            public void onResponse(Call<MoteStatus> call, Response<MoteStatus> response) {
-
-                // The state (on or off) was not changed, so just update the colour
-                int curColour = Color.parseColor("#" + response.body().getColour());
-                GradientDrawable bgShape = (GradientDrawable)btnColourPicker.getBackground();
-                bgShape.setColor(curColour);
-            }
-
-            @Override
-            public void onFailure(Call<MoteStatus> call, Throwable t) {
-                Toast.makeText(getActivity(), R.string.txt_mote_api_error, Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 }

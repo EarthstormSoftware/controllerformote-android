@@ -46,4 +46,25 @@
     <string name="pref_header_general">General</string>
     <string name="pref_title_mote_url">Mote API URL</string>
     <string name="title_activity_about">About</string>
+
+
+    <!-- Mote Strings -->
+    <string name="mote_state_on">On</string>
+    <string name="mote_state_off">Off</string>
+    <string name="mote_mode_colour">Colour</string>
+    <string name="mote_mode_rainbow">Rainbow</string>
+    <string name="mote_mode_fire">Fire</string>
+    <string name="mote_mode_water">Water</string>
+    <string name="mote_mode_unknown">Unknown</string>
+
+    <!-- Mote API Response Types -->
+    <string name="mote_api_response_ok">OK</string>
+    <string name="mote_api_response_apierror">The Mote server returned an error</string>
+    <string name="mote_api_response_validationerror">Data returned from the Mote server is not valid</string>
+    <string name="mote_api_response_ioerror">There was a problem communicating with the Mote server</string>
+    <string name="version_not_known">Version not known</string>
+    <string name="build_not_known">Build not known</string>
+    <string name="versioncode_not_known">VersionCode not known</string>
+    <string name="configure_api_url">Please configure the Mote API URL</string>
+
 </resources>

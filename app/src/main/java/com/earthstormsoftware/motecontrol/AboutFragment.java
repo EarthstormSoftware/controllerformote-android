@@ -26,7 +26,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 /**
- * A placeholder fragment containing a simple view.
+ * This fragment displays information about the app itself, including version and builds.
  */
 public class AboutFragment extends Fragment {
 
@@ -63,9 +63,9 @@ public class AboutFragment extends Fragment {
             tvVersionCode.setText(getString(R.string.lblVersionCode) + ": " + Integer.toString(iVersionCode));
 
         } catch (PackageManager.NameNotFoundException e) {
-            tvAppVersion.setText("Version not known");
-            tvAppBuild.setText("Build not known");
-            tvVersionCode.setText("VersionCode not known");
+            tvAppVersion.setText(R.string.version_not_known);
+            tvAppBuild.setText(R.string.build_not_known);
+            tvVersionCode.setText(R.string.versioncode_not_known);
         }
         return rootView;
     }
