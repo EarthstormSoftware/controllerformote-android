@@ -10,7 +10,7 @@
     <string name="txtAboutSummary">Information about Controller for Mote</string>
     <string name="lblVersionCode">versionCode </string>
     <string name="txtGitHub">On GitHub at <a href="https://github.com/EarthstormSoftware/controllerformote-android">EarthstormSoftware/controllerformote-android</a></string>
-    <string name="txtDeveloper">Originally developed by <a href="http://www.earthstormsoftware.com">Earthsorm Software</a></string>
+    <string name="txtDeveloper">Originally developed by <a href="http://www.earthstormsoftware.com">Earthstorm Software</a></string>
 
 
     <!-- Main Activity -->
