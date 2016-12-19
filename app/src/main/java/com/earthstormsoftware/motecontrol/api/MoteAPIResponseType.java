@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-package com.earthstormsoftware.motecontrol.com.earthstormsoftware.motecontrol.moteutil;
+package com.earthstormsoftware.motecontrol.api;
 
 import com.earthstormsoftware.motecontrol.MoteControl;
 import com.earthstormsoftware.motecontrol.R;
 
-public enum MoteMode {
-    COLOUR(R.string.mote_mode_colour),
-    RAINBOW(R.string.mote_mode_rainbow),
-    FIRE(R.string.mote_mode_fire),
-    WATER(R.string.mote_mode_water),
-    UNKNOWN(R.string.mote_mode_unknown);
+public enum MoteAPIResponseType {
+
+    OK(R.string.mote_api_response_ok),
+    API_ERROR(R.string.mote_api_response_apierror),
+    VALIDATION_ERROR(R.string.mote_api_response_validationerror),
+    IO_ERROR(R.string.mote_api_response_ioerror);
 
     private int resId = -1;
 
-    MoteMode(int i) {
+    MoteAPIResponseType(int i) {
         this.resId = i;
     }
 

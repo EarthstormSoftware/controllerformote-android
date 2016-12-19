@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.earthstormsoftware.motecontrol.com.earthstormsoftware.motecontrol.moteutil;
+package com.earthstormsoftware.motecontrol.api;
 
 import retrofit2.Call;
 import retrofit2.http.GET;
@@ -25,16 +25,16 @@ import retrofit2.http.Path;
   endpoints are defined here, and Retrofit enables them to easily be called from code.
  */
 
-public interface MoteAPI {
+public interface MoteAPIV0 {
     @GET("/mote/api/v1.0/status")
-    Call<MoteAPIResponse> getMoteStatus();
+    Call<MoteAPIResponseV0> getMoteStatus();
 
     @GET("/mote/api/v1.0/on")
-    Call<MoteAPIResponse> setMoteOn();
+    Call<MoteAPIResponseV0> setMoteOn();
 
     @GET("/mote/api/v1.0/off")
-    Call<MoteAPIResponse> setMoteOff();
+    Call<MoteAPIResponseV0> setMoteOff();
 
     @GET("/mote/api/v1.0/set/{colour}")
-    Call<MoteAPIResponse> setMoteColour(@Path("colour") String colour);
+    Call<MoteAPIResponseV0> setMoteColour(@Path("colour") String colour);
 }

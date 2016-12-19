@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.earthstormsoftware.motecontrol.com.earthstormsoftware.motecontrol.moteutil;
+package com.earthstormsoftware.motecontrol.api;
 
 import com.google.gson.annotations.SerializedName;
 
@@ -23,7 +23,7 @@ import com.google.gson.annotations.SerializedName;
  object. In our case, the response is in JSON so we use GSON to convert that to a usable object,
  defined here.
  */
-public class MoteAPIResponse {
+public class MoteAPIResponseV0 {
     @SerializedName("status")
     public int status;
 

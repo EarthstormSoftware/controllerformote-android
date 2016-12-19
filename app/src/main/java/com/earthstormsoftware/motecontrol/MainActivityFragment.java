@@ -35,9 +35,10 @@ import android.widget.CompoundButton;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
-import com.earthstormsoftware.motecontrol.com.earthstormsoftware.motecontrol.moteutil.Mote;
-import com.earthstormsoftware.motecontrol.com.earthstormsoftware.motecontrol.moteutil.MoteAPIResponseType;
-import com.earthstormsoftware.motecontrol.com.earthstormsoftware.motecontrol.moteutil.MoteMode;
+import com.earthstormsoftware.motecontrol.api.MoteAPIService;
+import com.earthstormsoftware.motecontrol.model.Mote;
+import com.earthstormsoftware.motecontrol.api.MoteAPIResponseType;
+import com.earthstormsoftware.motecontrol.model.MoteMode;
 
 /*
  *  Fragment used to display the main UI. Using fragments is generally considered good practice,
@@ -46,12 +47,9 @@ import com.earthstormsoftware.motecontrol.com.earthstormsoftware.motecontrol.mot
 
 public class MainActivityFragment extends Fragment {
 
-    private String moteURI;
-
     private Mote mote;
     private ToggleButton tglMoteSwitch;
     private Button btnColourPicker;
-    private int initialPickerColor;
 
     private BroadcastReceiver moteUpdateReceiver;
     private ColorPickerDialog colorPickerDialog;
@@ -68,18 +66,18 @@ public class MainActivityFragment extends Fragment {
 
         // Retrieve the URL of the Mote API from device storage
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        moteURI = prefs.getString("mote_uri", null);
+        String moteURI = prefs.getString("mote_uri", null);
 
         // Create the local Mote object and get the current status of the Mote from the host device
         if (moteURI != null){
             mote = new Mote(moteURI,"1","Mote1",false, MoteMode.COLOUR);
-            mote.updateMoteStatus();
+            MoteAPIService.startActionGetState(getContext(),mote);
         } else {
             Toast.makeText(getActivity(), R.string.configure_api_url, Toast.LENGTH_SHORT).show();
         }
 
         // Setup the colour picker dialog that will be called when the user clicks the button
-        initialPickerColor = Color.WHITE;
+        int initialPickerColor = Color.WHITE;
         colorPickerDialog = new ColorPickerDialog(getActivity(), initialPickerColor, new ColorPickerDialog.OnColorSelectedListener() {
 
             @Override
@@ -141,6 +139,8 @@ public class MainActivityFragment extends Fragment {
                 public void onReceive(Context context, Intent intent) {
                     MoteAPIResponseType mrt = (MoteAPIResponseType) intent.getSerializableExtra("result");
                     if (mrt == MoteAPIResponseType.OK) {
+                        mote.setOn(intent.getBooleanExtra("state",false));
+                        mote.setColour(intent.getIntExtra("colour",0));
                         updateDisplay();
                     } else {
                         Toast.makeText(getActivity(), mrt.toString(), Toast.LENGTH_SHORT).show();
@@ -190,7 +190,7 @@ public class MainActivityFragment extends Fragment {
     public void updateMoteStatus(){
         if (mote != null){
             Log.i(MoteControl.TAG,"Requesting Mote status update");
-            mote.updateMoteStatus();
+            MoteAPIService.startActionGetState(getContext(), mote);
             updateDisplay();
         } else {
             Toast.makeText(getActivity(), R.string.configure_api_url, Toast.LENGTH_SHORT).show();
@@ -201,7 +201,7 @@ public class MainActivityFragment extends Fragment {
     public void setMoteState(boolean newState){
         if (mote != null){
             Log.i(MoteControl.TAG,"Setting new Mote state");
-            mote.setMoteState(newState);
+            MoteAPIService.startActionSetState(getContext(), mote, newState);
             updateDisplay();
         } else {
             Toast.makeText(getActivity(), R.string.configure_api_url, Toast.LENGTH_SHORT).show();
@@ -212,7 +212,7 @@ public class MainActivityFragment extends Fragment {
     public void setMoteColour(int newColour){
         if (mote != null){
             Log.i(MoteControl.TAG,"Setting new Mote colour");
-            mote.setMoteColour();
+            MoteAPIService.startActionSetColour(getContext(),mote,newColour);
             updateDisplay();
         } else {
             Toast.makeText(getActivity(), R.string.configure_api_url, Toast.LENGTH_SHORT).show();
